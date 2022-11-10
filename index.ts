@@ -111,7 +111,6 @@ app.post(
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(BAD_REQUEST).json({
-        success: false,
         errors: errors.array(),
         code: BAD_REQUEST,
       });
@@ -132,7 +131,6 @@ app.post(
       });
     } catch (error) {
       return res.status(SERVER_ERROR).json({
-        success: false,
         error: error.message,
         code: SERVER_ERROR,
       });
