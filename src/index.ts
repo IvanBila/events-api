@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
-import { PORT } from './config';
+import { PORT, CONNECTION_URI } from './config';
 import mongoose from 'mongoose';
 import { Event as EventModel } from './Models';
 import swaggerUi from 'swagger-ui-express';
@@ -13,7 +13,7 @@ import { body, validationResult } from 'express-validator'
 
 dotenv.config();
 const app: Express = express();
-mongoose.connect(process.env.CONNECTION_URI);
+mongoose.connect(CONNECTION_URI);
 app.use(express.json());
 app.use(morgan('common'));
 
@@ -205,6 +205,6 @@ app.delete('/event/:eventId', async (req: Request, res: Response) => {
   }
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`⚡️[server]: Server is running at https://localhost:${PORT}`);
 });
