@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import { Event as EventModel } from './Models';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
-import { Event } from './types';
+import { Event } from '../types';
 import { SERVER_ERROR, NOT_FOUND, CREATED, BAD_REQUEST, OK } from './http';
 import { body, validationResult } from 'express-validator'
 

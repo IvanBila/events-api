@@ -1,5 +1,5 @@
 import {Event as EventModel, Event} from './Models';
-import {Event as _Event} from './types';
+import {Event as _Event} from '../types';
 
 const EventService = {
   getAllEvents: async () => {
