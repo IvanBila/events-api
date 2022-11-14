@@ -62,12 +62,12 @@ app.get('/events', async (request: Request, response: Response) => {
     if (eventId) {
       const _event = await EventModel.find({ _id: eventId }).select('-__v');
       if (!_event) {
-        response.status(NOT_FOUND).send({
+        return response.status(NOT_FOUND).send({
           message: 'No events found',
           code: NOT_FOUND,
         });
       } else {
-        response.status(OK).send({
+        return response.status(OK).send({
           code: OK,
           data: [_event],
         });
@@ -82,18 +82,18 @@ app.get('/events', async (request: Request, response: Response) => {
       end: new Date(event.endDate).toLocaleDateString('en-CA'),
     }));
     if (!events) {
-      response.status(NOT_FOUND).send({
+      return response.status(NOT_FOUND).send({
         message: 'No events found',
         code: NOT_FOUND,
       });
     } else {
-      response.status(OK).send({
+      return response.status(OK).send({
         code: OK,
         data: events,
       });
     }
   } catch (error) {
-    response.status(SERVER_ERROR).send({
+    return response.status(SERVER_ERROR).send({
       code: SERVER_ERROR,
       message: 'Unable to fetch events',
     });
@@ -125,14 +125,14 @@ app.post(
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(BAD_REQUEST).json({
+      return res.status(BAD_REQUEST).send({
         errors: errors.array(),
         code: BAD_REQUEST,
       });
     }
     const body = req.body;
     if (!body) {
-      return res.status(BAD_REQUEST).json({
+      return res.status(BAD_REQUEST).send({
         code: BAD_REQUEST,
         message: 'You must provide a event',
       });
@@ -140,12 +140,12 @@ app.post(
 
     try {
       const result = await EventModel.create(body);
-      res.status(CREATED).send({
+      return res.status(CREATED).send({
         data: result,
         code: CREATED,
       });
     } catch (error) {
-      return res.status(SERVER_ERROR).json({
+      return res.status(SERVER_ERROR).send({
         error: error.message,
         code: SERVER_ERROR,
       });
@@ -167,38 +167,44 @@ app.put(
       { new: true },
       (err, event) => {
         if (err) {
-          res.status(BAD_REQUEST).send({
+          return res.status(BAD_REQUEST).send({
             code: BAD_REQUEST,
             message: 'Unable to update event',
           });
+        } else {
+          return res.status(OK).send({
+            code: OK,
+            data: event,
+          });
         }
-        res.status(OK).json({
-          code: OK,
-          data: event,
-        });
       }
     );
   }
 );
 
 app.delete('/event/:eventId', async (req: Request, res: Response) => {
+  const { eventId } = req.params;
+  if (!eventId) {
+    return res.status(BAD_REQUEST).send({
+      code: BAD_REQUEST,
+      message: 'You must provide a event id',
+    });
+  }
   try {
-    const result = await EventModel.findByIdAndRemove(
-      req.params.eventId,
-      (err, event) => {
-        if (err) {
-          res.status(BAD_REQUEST).send({
-            code: BAD_REQUEST,
-            message: 'Unable to delete event',
-          });
-        }
-        res
-          .status(OK)
-          .json({ code: OK, message: 'Successfully deleted event!' });
-      }
-    );
+    const response = await EventModel.findOneAndRemove(({_id: eventId}))
+    if (!response) {
+      return res.status(NOT_FOUND).send({
+        code: NOT_FOUND,
+        message: 'Event not found',
+      });
+    } else {
+      return res.status(OK).send({
+        code: OK,
+        message: 'Event deleted',
+      })
+    }
   } catch (error) {
-    res.status(SERVER_ERROR).send({
+    return res.status(SERVER_ERROR).send({
       code: SERVER_ERROR,
       message: "Couldn't delete event",
     });

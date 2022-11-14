@@ -7,13 +7,17 @@
     "node": "18.9.0"
   },
   "scripts": {
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\"",
+    "dev": "nodemon",
     "test": "",
     "lint": "eslint *.ts",
     "build": "tsc",
     "format": "prettier --write \"*.ts\"",
     "start": "node ./dist/index.js",
     "postinstall": "npm run build"
+  },
+  "nodemonConfig": {
+    "ext": "ts",
+    "exec": "npm run build && npm start"
   },
   "keywords": [],
   "author": "",
