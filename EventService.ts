@@ -1,6 +1,5 @@
 import {Event as EventModel, Event} from './Models';
 import {Event as _Event} from './types';
-import {BAD_REQUEST, OK} from "./http";
 
 const EventService = {
   getAllEvents: async () => {

@@ -9,7 +9,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
 import { Event } from './types';
 import { SERVER_ERROR, NOT_FOUND, CREATED, BAD_REQUEST, OK } from './http';
-const { body, validationResult } = require('express-validator');
+import { body, validationResult } from 'express-validator'
 
 dotenv.config();
 const app: Express = express();
@@ -57,9 +57,24 @@ const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.get('/events', async (request: Request, response: Response) => {
+  const { eventId } = request.query;
   try {
+    if (eventId) {
+      const _event = await EventModel.find({ _id: eventId }).select('-__v');
+      if (!_event) {
+        response.status(NOT_FOUND).send({
+          message: 'No events found',
+          code: NOT_FOUND,
+        });
+      } else {
+        response.status(OK).send({
+          code: OK,
+          data: [_event],
+        });
+      }
+    }
     const _events = await EventModel.find({}).select('-__v');
-    let events: Event[] = _events.map((event) => ({
+    const events: Event[] = _events.map((event) => ({
       id: event._id.toString(),
       title: event.title,
       description: event.description,
@@ -167,12 +182,27 @@ app.put(
 );
 
 app.delete('/event/:eventId', async (req: Request, res: Response) => {
-  await EventModel.findByIdAndRemove(req.params.eventId, (err, event) => {
-    if (err) {
-      res.send(err);
-    }
-    res.status(OK).json({ code: OK, message: 'Successfully deleted event!' });
-  });
+  try {
+    const result = await EventModel.findByIdAndRemove(
+      req.params.eventId,
+      (err, event) => {
+        if (err) {
+          res.status(BAD_REQUEST).send({
+            code: BAD_REQUEST,
+            message: 'Unable to delete event',
+          });
+        }
+        res
+          .status(OK)
+          .json({ code: OK, message: 'Successfully deleted event!' });
+      }
+    );
+  } catch (error) {
+    res.status(SERVER_ERROR).send({
+      code: SERVER_ERROR,
+      message: "Couldn't delete event",
+    });
+  }
 });
 
 app.listen(PORT, () => {
