@@ -13,7 +13,8 @@ import { body, validationResult } from 'express-validator'
 
 dotenv.config();
 const app: Express = express();
-mongoose.connect(CONNECTION_URI);
+// @ts-ignore
+mongoose.connect(CONNECTION_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 app.use(express.json());
 app.use(morgan('common'));
 
@@ -55,6 +56,7 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 
 app.get('/events', async (request: Request, response: Response) => {
   const { eventId } = request.query;
@@ -101,7 +103,7 @@ app.get('/events', async (request: Request, response: Response) => {
 });
 
 app.post(
-  '/event',
+  '/events',
   body('title', 'Event title is required')
     .isString()
     .isLength({ min: 6 })
@@ -154,14 +156,14 @@ app.post(
 );
 
 app.put(
-  '/event/:eventId',
+  '/events/:eventId',
   body('title', 'Event title is required')
     .isString()
     .isLength({ min: 6 })
     .trim()
     .escape(),
-  (req: Request, res: Response) => {
-    EventModel.findByIdAndUpdate(
+  async (req: Request, res: Response) => {
+    await EventModel.findByIdAndUpdate(
       req.params.eventId,
       req.body,
       { new: true },
@@ -182,7 +184,7 @@ app.put(
   }
 );
 
-app.delete('/event/:eventId', async (req: Request, res: Response) => {
+app.delete('/events/:eventId', async (req: Request, res: Response) => {
   const { eventId } = req.params;
   if (!eventId) {
     return res.status(BAD_REQUEST).send({
@@ -212,5 +214,5 @@ app.delete('/event/:eventId', async (req: Request, res: Response) => {
 });
 
 const server = app.listen(PORT, () => {
-  console.log(`⚡️[server]: Server is running at https://localhost:${PORT}`);
+  console.log(`️[server]: Server is running at https://localhost:${PORT}`);
 });
